@@ -1,0 +1,12 @@
+C-ODEPACK is a wrapper interface for ODEPACK. 
+
+ODEPACK is a general Differential equation integrator written by Alan C. Hindmarsh and others at LLNL. It can be obtained from netlib or from here:
+https://computation.llnl.gov/casc/odepack/odepack_home.html
+See ODEPACK documentation for information about citing ODEPACK.
+
+You have to link the binaries to those of ODEPACK. C-ODEPACK as of now only provides a wrapper for DLSODE, not DLSODES or DLSODAR - or any of the Single float
+versions of these functions.
+
+Use Makefile.odepack to generate static and dynamic libraries of ODEPACK.
+
+The simple-pendulum example in ./example is fairly easy to follow through.
