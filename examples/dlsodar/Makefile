@@ -18,7 +18,7 @@ DEBUG = -g
 FCFLAGS = $(DEBUG) -std=legacy -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 FC = gfortran $(FCFLAGS)
 LINFLAGS = -l:libcodepack.a -l:libopkd.a -lm -lgfortran
-INCFLAGS = -I ../../src -L ../../src -L ../ 
+INCFLAGS = -I ../../src -L ../../src -L ../../odepack
 CCFLAGS = $(DEBUG) -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 CPPFLAGS = $(DEBUG) -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 CC = gcc $(CCFLAGS) $(INCFLAGS)
