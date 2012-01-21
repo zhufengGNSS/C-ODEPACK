@@ -22,7 +22,7 @@
 #include <math.h>
 
 #include "opkdmain.h"
-#include "dlsode.h"
+#include "c-odepack.h"
 #include "utility.h"
 
 dlsode_workspace * dlsode_workspace_alloc(const dlsode_options *opt){
@@ -218,7 +218,9 @@ void dlsode_workspace_reset(dlsode_workspace *dls, const dlsode_options *opt){
     dls->iwork[0] = opt->jac_lower_bandwidth;
     dls->iwork[1] = opt->jac_upper_bandwidth;
   }
-/*--------------------------------------------------------------*/    
+/*--------------------------------------------------------------*/
+  dls->nerr = 0;
+  
   return;
 }
 
@@ -229,22 +231,28 @@ void dlsode_workspace_free(dlsode_workspace *dls){
 }
 
 void dlsode_integrate(double t,
-		      double t0, double *q,
-		      field_func field_func, jac_func jac_func,
+		      double *t0, double *q,
+		      odepack_field_func f_func, odepack_jacobian_func j_func,
 		      void *data, dlsode_workspace *dls){
 
   /*Not ANSI, don't know if this is thread safe.*/
-  void dlsode_field_compat(const int *neq, const double *t, const double *y, double *ydot){
-    field_func(ydot, *t, y, data);
+  void dlsode_field_compat(const int *neq, const double *t_, const double *y, double *ydot){
+    f_func(ydot, *t_, y, data);
     return;
   }
 
-  void dlsode_jacobian_compat(const int *neq, const double *t, const double *y, const int *ml, const int *mu, double *pd, const int *nrowpd){
-    jac_func(pd, *t, q, data);
+  void dlsode_jacobian_compat(const int *neq, const double *t_, const double *y, const int *ml, const int *mu, double *pd, const int *nrowpd){
+    j_func(pd, *t_, q, data);
     return;
   }
 
-  dlsode_(dlsode_field_compat, &dls->neq, q, &t0, &t, &dls->itol, dls->rtol, dls->atol, &dls->itask, &dls->istate, &dls->iopt, dls->rwork, &dls->lrw, dls->iwork, &dls->liw, dlsode_jacobian_compat, &dls->mf);
+  dlsode_(dlsode_field_compat,
+	  &dls->neq, q, t0, &t,
+	  &dls->itol, dls->rtol, dls->atol,
+	  &dls->itask, &dls->istate, &dls->iopt,
+	  dls->rwork, &dls->lrw, dls->iwork, &dls->liw,
+	  dlsode_jacobian_compat,
+	  &dls->mf);
   
   if(dls->istate < 0){
     fprintf(stderr, "DLSODE:\n Warning: ISTATE = %d\n", dls->istate);

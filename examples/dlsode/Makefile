@@ -14,19 +14,18 @@
     # You should have received a copy of the GNU General Public License
     # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-DEBUG = #-g
-FCFLAGS = $(DEBUG) -fPIC -std=legacy -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
+DEBUG = -g
+FCFLAGS = $(DEBUG) -std=legacy -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 FC = gfortran $(FCFLAGS)
-LINFLAGS = -lm -lsnopt_c -lf2c -lblas -lsnprint_c -lgfortran -lsnfwrap_c -ladolc -lgsl -lgslcblas -l:libclmech.a -l:libopkd.a -lglut -lnlopt_cxx -lGL -lGLU
-INCFLAGS = -I optcon -I /home/neptune/include -L /home/neptune/lib -I solvers/snopt -I solvers/ipopt -I. -I optcon/orthopoly
-CCFLAGS = $(DEBUG) -fPIC -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
-CPPFLAGS = $(DEBUG) -fPIC -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
+LINFLAGS = -l:libcodepack.a -l:libopkd.a -lm -lgfortran
+INCFLAGS = -I ../../src -L ../../src -L ../ 
+CCFLAGS = $(DEBUG) -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
+CPPFLAGS = $(DEBUG) -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 CC = gcc $(CCFLAGS) $(INCFLAGS)
 CPP = g++ $(CPPFLAGS) $(INCFLAGS)
 
-OBJECTS = dlsode.o utility.o main.o eom_double.o
-
-PROG = dpend_dlsode
+OBJECTS = simple-pendulum.o
+PROG = simple-pendulum
 
 .f.o:
 	$(FC) -c $< -o $@
@@ -38,7 +37,7 @@ PROG = dpend_dlsode
 	$(CPP) -c $< -o $@
 
 main: $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(PROG) $(LINFLAGS)
+	$(CC) $(OBJECTS) -o $(PROG) $(LINFLAGS) 
 
 clean:
-	find -iname "*.o" -exec rm '{}' \;
+	rm -f *.o *~

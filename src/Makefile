@@ -18,12 +18,12 @@ FCFLAGS = -fPIC -std=legacy -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 
 FC = gfortran $(FCFLAGS)
 LINFLAGS = -lm -lgfortran
 INCFLAGS =
-CCFLAGS = -fPIC -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
+CCFLAGS = -g -fPIC -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 CC = gcc $(CCFLAGS) $(INCFLAGS)
 
-OBJECTS = dlsode.o utility.o
+OBJECTS = dlsode.o dlsodar.o utility.o
 
-LIBNAME = cdlsode
+LIBNAME = codepack
 
 .f.o:
 	$(FC) -c $< -o $@

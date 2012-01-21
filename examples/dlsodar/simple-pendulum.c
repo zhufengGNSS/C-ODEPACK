@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "dlsode.h"
+#include "c-odepack.h"
 
 void simple_pendulum_field(double *qdot,
 			   const double t, const double *q, void *data){
@@ -53,48 +53,79 @@ void simple_pendulum_jacobian(double *dfdq,
   return;
 }
 
+void simple_pendulum_cycle(double *g,
+			   const double t, const double *q, void *data){
+  double *parms;
+  parms = (double *) data;
+  
+  double alpha;
+  alpha = parms[0];
+
+  double theta_0;
+  theta_0 = parms[1];
+/*-----------------------------------------------------------------------*/
+  g[0] = (q[0] - theta_0) * q[1];
+
+  /*Make sure the initial value is not detected!*/
+  if(t < 1e-2)
+    g[0] += 0.1;
+
+  return;
+}
+
 int main(){
 /*-----------------------------------------------------------------------*/  
   double opkd_rtol = 0.0, opkd_atol = 1e-12;
-  dlsode_options *opkd_opt;
-  opkd_opt = calloc(1, sizeof(dlsode_options));
+  dlsodar_options *opkd_opt;
+  opkd_opt = calloc(1, sizeof(dlsodar_options));
+  
   opkd_opt->NEQ = 2;
-  opkd_opt->step_method = BDF;
-  opkd_opt->iter_method = CHORD_ITER_INT_FULL_JAC;
+  opkd_opt->NG = 1;
+  
+  opkd_opt->jac_type = USR_FULL_JAC;
+  
   opkd_opt->max_steps = 10000;
   opkd_opt->atol = &opkd_atol;
   opkd_opt->rtol = &opkd_rtol;
 
-  dlsode_workspace *opkd_work;
-  opkd_work = dlsode_workspace_alloc(opkd_opt);
+  dlsodar_workspace *opkd_work;
+  opkd_work = dlsodar_workspace_alloc(opkd_opt);
 /*-----------------------------------------------------------------------*/
   double q[2], t0, tf, dt, t;
 
   t0 = 0.0;
-  tf = 10.0;
+  tf = 100.0;
   dt = 0.1;
 
-  q[0] = M_PI/3.0;
+  q[0] = M_PI * 999/1000.0;
   q[1] = 0.;
 
   double alpha = 1.0;
+  double parms[2] = {alpha, q[0]};
 /*-----------------------------------------------------------------------*/  
   FILE *data;
   data = fopen("simple_pendulum_trajectory", "w");
 
-  int i;
+  int i = 0, cyc = 0;
   t = t0;
-  while(t < tf){
-    dlsode_integrate(t + dt, t, q,
-		     &simple_pendulum_field, NULL,
-		     &alpha, opkd_work);
+  
+  while(t < tf){    
+    dlsodar_integrate(t + dt,
+		      &t, q,
+		      &simple_pendulum_field, NULL// &simple_pendulum_jacobian
+		      , &simple_pendulum_cycle,
+		      &parms, opkd_work);
     fprintf(data, "%.15lf\t%.15lf\t%.15lf\n", t + dt, q[0], q[1]);
-    t += dt;
+    
+    if(opkd_work->jroot[0] == 1)
+      cyc += 1;
+    if(cyc == 2)
+      break;
   }
 
   fclose(data);
 /*-----------------------------------------------------------------------*/  
-  dlsode_workspace_free(opkd_work);
+  dlsodar_workspace_free(opkd_work);
   free(opkd_opt);
   return;
 }

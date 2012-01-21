@@ -16,6 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __C_ODEPACK_DLSODE__
+#define __C_ODEPACK_DLSODE__
+
 /* Quoting from opkdmain.f
 C              METH indicates the basic linear multistep method:
 C              1   Implicit Adams method.
@@ -133,7 +136,7 @@ C                        default value is 500.
 } dlsode_options;
 
 typedef struct{
-  int iopt, istate, itask, itol, *iwork, lenrw, liw, lrw, mf, neq, nerr;
+  int iopt, istate, itask, itol, *iwork, liw, lrw, mf, neq, nerr;
   double *atol, *rtol, *rwork;
 } dlsode_workspace;
 
@@ -143,13 +146,8 @@ void dlsode_workspace_reset(dlsode_workspace *dls, const dlsode_options *opt);
 
 void dlsode_workspace_free(dlsode_workspace *dls);
 
-typedef void (*field_func)(double *qdot,
-			   const double t, const double *q, void *data);
-
-typedef void (*jac_func)(double *dfdq,
-			 const double t, const double *q, void *data);
-
 void dlsode_integrate(double t,
-		      double t0, double *q,
-		      field_func func, jac_func jac_func,
+		      double *t0, double *q,
+		      odepack_field_func func, odepack_jacobian_func jac_func,
 		      void *data, dlsode_workspace *dls);
+#endif
