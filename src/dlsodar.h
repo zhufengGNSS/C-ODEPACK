@@ -132,8 +132,9 @@ dlsodar_session* dlsodar_session_create
 int dlsodar_session_init(dlsodar_session *dls);
 void dlsodar_session_close(dlsodar_session *dls);
 
-int dlsodar_integrate(double t,
-		      double *t0, double *q,
-		      odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
-		      void *data, dlsodar_session *dls);
+int dlsodar_integrate
+(double t,
+ double *t0, double *q,
+ odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
+ void *data, dlsodar_session *dls);
 #endif
