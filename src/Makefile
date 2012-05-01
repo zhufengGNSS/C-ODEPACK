@@ -31,6 +31,10 @@ LIBNAME = codepack
 .c.o:
 	$(CC) -c $< -o $@
 
+main: 
+	make static
+	make dynamic
+
 static: $(OBJECTS)
 	ar -cvq lib$(LIBNAME).a $(OBJECTS)
 
