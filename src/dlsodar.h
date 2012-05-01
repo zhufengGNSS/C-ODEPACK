@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011  Akshay Srinivasan 
+  Copyright (C) 2012  Akshay Srinivasan 
   <akshay@ncbs.res.in>
 
   This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,31 @@
 
 #ifndef __C_ODEPACK_DLSODAR__
 #define __C_ODEPACK_DLSODAR__
+
+/* Quoting from opkdmain.f
+C ISTATE = 2 or 3  if DLSODAR was successful, negative otherwise.
+C           2 means no root was found, and TOUT was reached as desired.
+C           3 means a root was found prior to reaching TOUT.
+C          -1 means excess work done on this call (perhaps wrong JT).
+C          -2 means excess accuracy requested (tolerances too small).
+C          -3 means illegal input detected (see printed message).
+C          -4 means repeated error test failures (check all inputs).
+C          -5 means repeated convergence failures (perhaps bad Jacobian
+C             supplied or wrong choice of JT or tolerances).
+C          -6 means error weight became zero during problem. (Solution
+C             component i vanished, and ATOL or ATOL(i) = 0.)
+C          -7 means work space insufficient to finish (see messages).
+*/
+
+#define DLSODAR_NO_ROOT_FOUND 2
+#define DLSODAR_ROOT_FOUND 3
+#define DLSODAR_EXCESS_WORK_DONE -1
+#define DLSODAR_EXCESS_ACCURACY_REQUESTED -2
+#define DLSODAR_ILLEGAL_INPUT -3
+#define DLSODAR_REPEATED_FAILURE -4
+#define DLSODAR_REPEATED_CONVERGENCE_FAILURE -5
+#define DLSODAR_ERROR_IS_ZERO -6
+#define DLSODAR_INSUFFICIENT_WORKSPACE -7
 
 /*---------------JT----------------------*/
 #define USR_FULL_JAC 1

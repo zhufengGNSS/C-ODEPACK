@@ -18,6 +18,40 @@
 
 #ifndef __C_ODEPACK_DLSODE__
 #define __C_ODEPACK_DLSODE__
+/*
+  Quoting from opkdmain.f
+C     ISTATE:INOUT  Index used for input and output to specify the state
+C                   of the calculation.
+C                   Input:
+C                    1   This is the first call for a problem.
+C                    2   This is a subsequent call.
+C                   Output:
+C                    1   Nothing was done, because TOUT was equal to T.
+C                    2   DLSODE was successful (otherwise, negative).
+C                        Note that ISTATE need not be modified after a
+C                        successful return.
+C                   -1   Excess work done on this call (perhaps wrong
+C                        MF).
+C                   -2   Excess accuracy requested (tolerances too
+C                        small).
+C                   -3   Illegal input detected (see printed message).
+C                   -4   Repeated error test failures (check all
+C                        inputs).
+C                   -5   Repeated convergence failures (perhaps bad
+C                        Jacobian supplied or wrong choice of MF or
+C                        tolerances).
+C                   -6   Error weight became zero during problem
+C                        (solution component i vanished, and ATOL or
+C                        ATOL(i) = 0.).
+*/
+#define DLSODE_FIRST_CALL 1
+#define DLSODE_SUBSEQ_CALL 2
+#define DLSODE_EXCESS_WORK_DONE -1
+#define DLSODE_EXCESS_ACCURACY_REQUESTED -2
+#define DLSODE_ILLEGAL_INPUT -3
+#define DLSODE_REPEATED_FAILURE -4
+#define DLSODE_REPEATED_CONVERGENCE_FAILURE -5
+#define DLSODE_ERROR_IS_ZERO -6
 
 /* Quoting from opkdmain.f
 C              METH indicates the basic linear multistep method:

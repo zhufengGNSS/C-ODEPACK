@@ -3,7 +3,7 @@
 #define __C_ODEPACK__
 
 #define C_ODEPACK_SUCCESS 0
-#define C_ODEPACK_MEM_ERROR -1
+#define C_ODEPACK_MEM_ERROR -20
 #define C_ODEPACK_UNKNOWN_OPTION -40
 
 typedef void (*odepack_field_func)(double *qdot,
