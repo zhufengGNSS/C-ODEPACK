@@ -64,7 +64,7 @@ C              For other values of MITER, a dummy argument can be used.
 
 
 typedef struct{
-  int NEQ;
+  int neq;
   int step_method, iter_method;
   
   int itol;
@@ -132,22 +132,26 @@ C                        order to be reduced.
 C     MXSTEP  IWORK(6)   Maximum number of (internally defined) steps
 C                        allowed during one call to the solver.  The
 C                        default value is 500.
-*/  
-} dlsode_options;
+*/
+  /*-----------------------------------------------------------------------
+    Do not tweak these variables, if you don't know what you are doing.
+    These are used in the actual dlsode call
+    -----------------------------------------------------------------------*/
+  int iopt, istate, *iwork, liw, lrw, mf;
+  double *rwork;
+} dlsode_session;
 
-typedef struct{
-  int iopt, istate, itask, itol, *iwork, liw, lrw, mf, neq, nerr;
-  double *atol, *rtol, *rwork;
-} dlsode_workspace;
+dlsode_session* dlsode_session_create
+(int neq,
+ int step_method, int iter_method,
+ int max_steps, double *atol, double *rtol);
 
-dlsode_workspace * dlsode_workspace_alloc(const dlsode_options *opt);
+int dlsode_session_init(dlsode_session *sess);
+void dlsode_session_close(dlsode_session *sess);
 
-void dlsode_workspace_reset(dlsode_workspace *dls, const dlsode_options *opt);
-
-void dlsode_workspace_free(dlsode_workspace *dls);
-
-void dlsode_integrate(double t,
-		      double *t0, double *q,
-		      odepack_field_func func, odepack_jacobian_func jac_func,
-		      void *data, dlsode_workspace *dls);
+int dlsode_integrate
+(double t,
+ double *t0, double *q,
+ odepack_field_func func, odepack_jacobian_func jac_func,
+ void *data, dlsode_session *sess);
 #endif

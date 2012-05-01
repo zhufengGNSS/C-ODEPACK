@@ -25,161 +25,104 @@
 #include "c-odepack.h"
 #include "utility.h"
 
-dlsodar_workspace * dlsodar_workspace_alloc(const dlsodar_options *opt){
-  dlsodar_workspace *dls;
-  dls = (dlsodar_workspace *) calloc(1, sizeof(dlsodar_workspace));
-  did_malloc_work(dls, "dlsodar_workspace_alloc");
-  
-  dls->neq = opt->NEQ;
-  dls->ng = opt->NG;
-/*-----------------------------------------------------------------------*/
-  dls->jroot = calloc(dls->ng, sizeof(int));
-  did_malloc_work(dls->jroot, "dlsodar_workspace_alloc");
-/*--------------------------------------------------------------*/  
-  dls->lrw = 22 + dls->neq * max(16, dls->neq + 9) + 3 * dls->ng;
-  dls->rwork = calloc(dls->lrw, sizeof(double));
-  did_malloc_work(dls->rwork, "dlsodar_workspace_alloc");		  
-/*--------------------------------------------------------------*/
-  dls->liw = 20 + dls->neq;
-  dls->iwork = calloc(dls->liw, sizeof(int));
-  did_malloc_work(dls->iwork, "dlsodar_workspace_alloc");
-/*-----------------------------------------------------------------------*/  
-  dls->iopt = 1;     
+dlsodar_session* dlsodar_session_create
+(int neq, int ng,
+ int jac_type, int max_steps,
+ double *atol, double *rtol){
+  dlsodar_session *dls;
+  dls = calloc(1, sizeof(dlsodar_session));
+  if(dls == NULL)
+    goto mem_error;
 
-  dls->rwork[4] = opt->init_step_size;
-  dls->rwork[5] = opt->max_step_size;
-  dls->rwork[6] = opt->min_step_size;
-
-  dls->iwork[4] = opt->print_at_switch;
-  dls->iwork[5] = opt->max_steps;
-  dls->iwork[6] = opt->max_num_messages;
-  dls->iwork[7] = opt->max_order_non_stiff;
-  dls->iwork[8] = opt->max_order_stiff;
-/*--------------------------------------------------------------*/
-  if((opt->itol < 2) || (opt->itol > 4)){
-    dls->itol = 1;//Error bounds are same for all dimensions.
-  }
-  else
-    dls->itol = opt->itol;
-  
-  dls->rtol = opt->rtol;
-  dls->atol = opt->atol;
-/*--------------------------------------------------------------*/
-  if((opt->itask < 2) || (opt->itask > 5))
-    dls->itask = 1;
-  else{
-    dls->itask = opt->itask;
-    if(dls->itask > 3)
-      dls->rwork[0] = opt->t_critical;
-  }
-/*--------------------------------------------------------------*/
-  dls->istate = 1;
-/*--------------------------------------------------------------*/
-  dls->jt = opt->jac_type;
-  if((dls->jt == 4) || (dls->jt == 5)){
-    dls->iwork[0] = opt->jac_lower_bandwidth;
-    dls->iwork[1] = opt->jac_upper_bandwidth;
-  }
-/*--------------------------------------------------------------*/  
-  return dls;
-}
-
-void dlsodar_workspace_reset(dlsodar_workspace *dls, const dlsodar_options *opt){
-  int i, j, k;  
-/*-----------------------------------------------------------------------*/
-  int neq = opt->NEQ, ng = opt->NG;
-/*-----------------------------------------------------------------------*/ 
-  if(dls->ng < ng)
-    dls->jroot = realloc(dls->jroot, sizeof(int) * ng);
-  did_malloc_work(dls->jroot, "dlsodar_workspace_reset");
-
-  for(i = 0; i < ng; i++)
-    dls->jroot[i] = 0;
-/*-----------------------------------------------------------------------*/
-  dls->nerr = 0;
-/*--------------------------------------------------------------*/
-  int lrw_req;
-  lrw_req = 22 + neq * max(16, neq + 9) + 3 * ng;
-
-  if(dls->lrw < lrw_req)
-    dls->rwork = realloc(dls->rwork, sizeof(double) * lrw_req);
-  did_malloc_work(dls->rwork, "dlsodar_workspace_alloc");
-  
-  dls->lrw = lrw_req;
-  
-  for(i = 0; i < lrw_req; i++)
-    dls->rwork[i] = 0.;
-/*--------------------------------------------------------------*/
-  double liw_req;
-  liw_req = 20 + neq;
-
-  if(dls->liw < liw_req)
-    dls->iwork = realloc(dls->iwork, sizeof(int) * liw_req);  
-  did_malloc_work(dls->iwork, "dlsodar_workspace_alloc");
-
-  dls->liw = liw_req;
-
-  for(i = 0; i < liw_req; i++)
-    dls->iwork[i] = 0;
-/*-----------------------------------------------------------------------*/
   dls->neq = neq;
   dls->ng = ng;
-/*-----------------------------------------------------------------------*/  
+  dls->max_steps = max_steps;
+  dls->jac_type = jac_type;
+  dls->atol = atol;
+  dls->rtol = rtol;
+
+  return dls;
+
+mem_error:
+  fprintf(stderr, "dlsodar_session_create: Cannot allocate memory.\n");
+  return NULL;
+}
+
+int dlsodar_session_init(dlsodar_session *dls){
+  int i, j, k;
+  /*-----------------------------------------------------------------------*/
+  dls->jroot = calloc(dls->ng, sizeof(int));
+  if((dls->jroot == NULL) && (dls->ng > 0))
+    goto mem_error;
+  /*-----------------------------------------------------------------------*/
+  dls->lrw = 22 + dls->neq * MAX(16, dls->neq + 9) + 3 * dls->ng;
+  dls->rwork = calloc(dls->lrw, sizeof(double));
+  if(dls->rwork == NULL)
+    goto mem_error;
+  /*-----------------------------------------------------------------------*/
+  dls->liw = 20 + dls->neq;
+  dls->iwork = calloc(dls->liw, sizeof(int));
+  if(dls->iwork == NULL)
+    goto mem_error;
+  /*-----------------------------------------------------------------------*/
   dls->iopt = 1;
 
-  dls->rwork[4] = opt->init_step_size;
-  dls->rwork[5] = opt->max_step_size;
-  dls->rwork[6] = opt->min_step_size;
+  dls->rwork[4] = dls->init_step_size;
+  dls->rwork[5] = dls->max_step_size;
+  dls->rwork[6] = dls->min_step_size;
 
-  dls->iwork[4] = opt->print_at_switch;
-  dls->iwork[5] = opt->max_steps;
-  dls->iwork[6] = opt->max_num_messages;
-  dls->iwork[7] = opt->max_order_non_stiff;
-  dls->iwork[8] = opt->max_order_stiff;
+  dls->iwork[4] = dls->print_at_switch;
+  dls->iwork[5] = dls->max_steps;
+  dls->iwork[6] = dls->max_num_messages;
+  dls->iwork[7] = dls->max_order_non_stiff;
+  dls->iwork[8] = dls->max_order_stiff;
 /*--------------------------------------------------------------*/
-  if((opt->itol < 2) || (opt->itol > 4)){
-    dls->itol = 1;//Error bounds are same for all dimensions.
+  if((dls->itol < 2) || (dls->itol > 4)){
+    /*Error bounds are same for all dimensions.*/
+    dls->itol = 1;
   }
-  else
-    dls->itol = opt->itol;
-  
-  dls->rtol = opt->rtol;
-  dls->atol = opt->atol;
+
 /*--------------------------------------------------------------*/
-  if((opt->itask < 2) || (opt->itask > 5))
+  if((dls->itask < 2) || (dls->itask > 5))
     dls->itask = 1;
-  else{
-    dls->itask = opt->itask;
-    if(dls->itask > 3)
-      dls->rwork[0] = opt->t_critical;
-  }
+
+  if(dls->itask > 3)
+    dls->rwork[0] = dls->t_critical;
 /*--------------------------------------------------------------*/
   dls->istate = 1;
 /*--------------------------------------------------------------*/
-  dls->jt = opt->jac_type;
+  dls->jt = dls->jac_type;
   if((dls->jt == 4) || (dls->jt == 5)){
-    dls->iwork[0] = opt->jac_lower_bandwidth;
-    dls->iwork[1] = opt->jac_upper_bandwidth;
+    dls->iwork[0] = dls->jac_lower_bandwidth;
+    dls->iwork[1] = dls->jac_upper_bandwidth;
   }
-/*--------------------------------------------------------------*/
-  dls->nerr = 0;
-  
-  return;
+/*--------------------------------------------------------------*/  
+  return C_ODEPACK_SUCCESS;
+
+mem_error:
+  fprintf(stderr, "dlsodar_session_init: Cannot allocate memory.\n");
+  return C_ODEPACK_MEM_ERROR;
 }
 
-void dlsodar_workspace_free(dlsodar_workspace *dls){
+
+void dlsodar_session_close(dlsodar_session *dls){
+  if(dls == NULL)
+    return;
+  
   free(dls->rwork);
   free(dls->iwork);
   free(dls->jroot);
-  free(dls);
+  free(dls);  
 }
 
-void dlsodar_integrate(double t,
-		       double *t0, double *q,
-		       odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
-		       void *data, dlsodar_workspace *dls){
+int dlsodar_integrate(double t,
+		      double *t0, double *q,
+		      odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
+		      void *data, dlsodar_session *dls){
 
-  /*Not ANSI, don't know if this is thread safe.*/
+  /*Not ANSI, probably not thread safe, unless C has
+    closures or something like that :)
+  */
   void dlsodar_field_compat(const int *neq, const double *t_, const double *y, double *ydot){
     f_func(ydot, *t_, y, data);
     return;
@@ -202,10 +145,6 @@ void dlsodar_integrate(double t,
 	   dlsodar_jacobian_compat, &dls->jt,
 	   dlsodar_constraint_compat, &dls->ng,
 	   dls->jroot);
-  
-  if(dls->istate < 0){
-    fprintf(stderr, "DLSODAR:\n Warning: ISTATE = %d\n", dls->istate);
-    dls->nerr++;
-  }
-  return;
+
+  return dls->istate;
 }

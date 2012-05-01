@@ -21,7 +21,7 @@ INCFLAGS =
 CCFLAGS = -g -fPIC -O3 -ftree-vectorize -msse2 -ftree-vectorizer-verbose=0 -ffast-math
 CC = gcc $(CCFLAGS) $(INCFLAGS)
 
-OBJECTS = dlsode.o dlsodar.o utility.o
+OBJECTS = dlsode.o dlsodar.o
 
 LIBNAME = codepack
 
@@ -36,3 +36,6 @@ static: $(OBJECTS)
 
 dynamic: $(OBJECTS)
 	$(CC) $(LINFLAGS) -shared -Wl,-soname,lib$(LIBNAME).so -o lib$(LIBNAME).so $(OBJECTS)
+
+clean:
+	rm -f *.o *.a *.so

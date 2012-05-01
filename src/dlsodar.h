@@ -28,7 +28,7 @@
 /*-----------------------------------------------------------------------*/
 
 typedef struct{
-  int NEQ, NG;
+  int neq, ng;
   
   int jac_type;
   /* i - lower_bandwidth <= j <= i + upper_bandwidth */
@@ -116,21 +116,24 @@ C                   If MXORDS exceeds the default value, it will
 C                   be reduced to the default value.
 C                   MXORDS is held constant during the problem.
   */
-} dlsodar_options;
+  /*-----------------------------------------------------------------------
+    Do not tweak these variables, if you don't know what you are doing.
+    These are used in the actual dlsodar call
+    -----------------------------------------------------------------------*/
+  int iopt, istate, *iwork, liw, lrw, *jroot, jt;
+  double *rwork;
+} dlsodar_session;
 
-typedef struct{
-  int iopt, istate, itask, itol, *iwork, liw, lrw, neq, ng, nerr, *jroot, jt;
-  double *atol, *rtol, *rwork;
-} dlsodar_workspace;
+dlsodar_session* dlsodar_session_create
+(int neq, int ng,
+ int jac_type, int max_steps,
+ double *atol, double *rtol);
 
-dlsodar_workspace * dlsodar_workspace_alloc(const dlsodar_options *opt);
+int dlsodar_session_init(dlsodar_session *dls);
+void dlsodar_session_close(dlsodar_session *dls);
 
-void dlsodar_workspace_reset(dlsodar_workspace *dls, const dlsodar_options *opt);
-
-void dlsodar_workspace_free(dlsodar_workspace *dls);
-
-void dlsodar_integrate(double t,
-		       double *t0, double *q,
-		       odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
-		       void *data, dlsodar_workspace *dls);
+int dlsodar_integrate(double t,
+		      double *t0, double *q,
+		      odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
+		      void *data, dlsodar_session *dls);
 #endif

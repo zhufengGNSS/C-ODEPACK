@@ -76,20 +76,17 @@ void simple_pendulum_cycle(double *g,
 int main(){
 /*-----------------------------------------------------------------------*/  
   double opkd_rtol = 0.0, opkd_atol = 1e-12;
-  dlsodar_options *opkd_opt;
-  opkd_opt = calloc(1, sizeof(dlsodar_options));
-  
-  opkd_opt->NEQ = 2;
-  opkd_opt->NG = 1;
-  
-  opkd_opt->jac_type = USR_FULL_JAC;
-  
-  opkd_opt->max_steps = 10000;
-  opkd_opt->atol = &opkd_atol;
-  opkd_opt->rtol = &opkd_rtol;
+  dlsodar_session *opkd;
 
-  dlsodar_workspace *opkd_work;
-  opkd_work = dlsodar_workspace_alloc(opkd_opt);
+  opkd = dlsodar_session_create(2, 1,
+				USR_FULL_JAC, 10000,
+				&opkd_atol, &opkd_rtol);
+
+  if(opkd == NULL)
+    return 1;
+  
+  if(dlsodar_session_init(opkd) != C_ODEPACK_SUCCESS)
+    return 1;
 /*-----------------------------------------------------------------------*/
   double q[2], t0, tf, dt, t;
 
@@ -114,10 +111,10 @@ int main(){
 		      &t, q,
 		      &simple_pendulum_field, NULL// &simple_pendulum_jacobian
 		      , &simple_pendulum_cycle,
-		      &parms, opkd_work);
+		      &parms, opkd);
     fprintf(data, "%.15lf\t%.15lf\t%.15lf\n", t + dt, q[0], q[1]);
     
-    if(opkd_work->jroot[0] == 1)
+    if(opkd->jroot[0] == 1)
       cyc += 1;
     if(cyc == 2)
       break;
@@ -125,7 +122,7 @@ int main(){
 
   fclose(data);
 /*-----------------------------------------------------------------------*/  
-  dlsodar_workspace_free(opkd_work);
-  free(opkd_opt);
+  dlsodar_session_close(opkd);
+
   return;
 }

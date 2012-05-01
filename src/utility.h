@@ -17,9 +17,8 @@
 */
 
 
-#define max(a, b) ((a) >= (b) ? (a) : (b))
-#define min(a, b) ((a) <= (b) ? (a) : (b))
+#define MAX(a, b) ((a) >= (b) ? (a) : (b))
+#define MIN(a, b) ((a) <= (b) ? (a) : (b))
 
-#define frand() ((double) rand() / (double) RAND_MAX)
+#define FRAND() ((double) rand() / (double) RAND_MAX)
 
-void did_malloc_work(void *ptr, char *str);

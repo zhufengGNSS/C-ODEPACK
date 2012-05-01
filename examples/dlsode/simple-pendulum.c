@@ -41,7 +41,7 @@ void simple_pendulum_jacobian(double *dfdq,
 			      const double t, const double *q, void *data){
   double *parms;
   parms = (double *) data;
-
+  
   double alpha;
   alpha = parms[0];
   
@@ -56,17 +56,14 @@ void simple_pendulum_jacobian(double *dfdq,
 int main(){
 /*-----------------------------------------------------------------------*/  
   double opkd_rtol = 0.0, opkd_atol = 1e-12;
-  dlsode_options *opkd_opt;
-  opkd_opt = calloc(1, sizeof(dlsode_options));
-  opkd_opt->NEQ = 2;
-  opkd_opt->step_method = BDF;
-  opkd_opt->iter_method = CHORD_ITER_USR_FULL_JAC;
-  opkd_opt->max_steps = 10000;
-  opkd_opt->atol = &opkd_atol;
-  opkd_opt->rtol = &opkd_rtol;
+  dlsode_session *opkd;
+  opkd = dlsode_session_create(2,
+			       BDF, CHORD_ITER_USR_FULL_JAC,
+			       10000, &opkd_atol, &opkd_rtol);
 
-  dlsode_workspace *opkd_work;
-  opkd_work = dlsode_workspace_alloc(opkd_opt);
+  if(opkd == NULL)
+    return 1;
+  dlsode_session_init(opkd);
 /*-----------------------------------------------------------------------*/
   double q[2], t0, tf, dt, t;
 
@@ -88,13 +85,12 @@ int main(){
     dlsode_integrate(t + dt,
 		     &t, q,
 		     &simple_pendulum_field, &simple_pendulum_jacobian,
-		     &alpha, opkd_work);
+		     &alpha, opkd);
     fprintf(data, "%.15lf\t%.15lf\t%.15lf\n", t + dt, q[0], q[1]);
   }
 
   fclose(data);
 /*-----------------------------------------------------------------------*/  
-  dlsode_workspace_free(opkd_work);
-  free(opkd_opt);
+  dlsode_session_close(opkd);
   return;
 }
