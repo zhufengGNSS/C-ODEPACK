@@ -76,16 +76,16 @@ void simple_pendulum_cycle(double *g,
 int main(){
 /*-----------------------------------------------------------------------*/  
   double opkd_rtol = 0.0, opkd_atol = 1e-12;
-  dlsodar_session *opkd;
+  dlsodar_problem *opkd;
 
-  opkd = dlsodar_session_create(2, 1,
+  opkd = dlsodar_problem_create(2, 1,
 				USR_FULL_JAC, 10000,
 				&opkd_atol, &opkd_rtol);
 
   if(opkd == NULL)
     return 1;
   
-  if(dlsodar_session_init(opkd) != C_ODEPACK_SUCCESS)
+  if(dlsodar_problem_init(opkd) != C_ODEPACK_SUCCESS)
     return 1;
 /*-----------------------------------------------------------------------*/
   double q[2], t0, tf, dt, t;
@@ -122,7 +122,7 @@ int main(){
 
   fclose(data);
 /*-----------------------------------------------------------------------*/  
-  dlsodar_session_close(opkd);
+  dlsodar_problem_close(opkd);
 
   return;
 }

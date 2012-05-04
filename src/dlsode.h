@@ -173,19 +173,19 @@ C                        default value is 500.
     -----------------------------------------------------------------------*/
   int iopt, istate, *iwork, liw, lrw, mf;
   double *rwork;
-} dlsode_session;
+} dlsode_problem;
 
-dlsode_session* dlsode_session_create
+dlsode_problem* dlsode_problem_create
 (int neq,
  int step_method, int iter_method,
  int max_steps, double *atol, double *rtol);
 
-int dlsode_session_init(dlsode_session *sess);
-void dlsode_session_close(dlsode_session *sess);
+int dlsode_problem_init(dlsode_problem *sess);
+void dlsode_problem_close(dlsode_problem *sess);
 
 int dlsode_integrate
 (double t,
  double *t0, double *q,
  odepack_field_func func, odepack_jacobian_func jac_func,
- void *data, dlsode_session *sess);
+ void *data, dlsode_problem *sess);
 #endif

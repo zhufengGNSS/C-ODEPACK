@@ -25,13 +25,13 @@
 #include "c-odepack.h"
 #include "utility.h"
 
-dlsode_session* dlsode_session_create
+dlsode_problem* dlsode_problem_create
 (int neq,
  int step_method, int iter_method,
  int max_steps, double *atol, double *rtol)
 {
-  dlsode_session *ret;
-  ret = calloc(1, sizeof(dlsode_session));
+  dlsode_problem *ret;
+  ret = calloc(1, sizeof(dlsode_problem));
   if(ret == NULL)
     goto mem_error;
   
@@ -45,11 +45,11 @@ dlsode_session* dlsode_session_create
   return ret;
 
 mem_error:
-  fprintf(stderr, "dlsode_session_create: Cannot allocate memory.\n");
+  fprintf(stderr, "dlsode_problem_create: Cannot allocate memory.\n");
   return NULL;
 }
 
-int dlsode_session_init(dlsode_session *dls)
+int dlsode_problem_init(dlsode_problem *dls)
 {
   int i, j, k;
   /*-----------------------------------------------------------------------*/
@@ -136,17 +136,17 @@ int dlsode_session_init(dlsode_session *dls)
   return C_ODEPACK_SUCCESS;
 
 mem_error:
-  fprintf(stderr, "dlsode_session_init: Cannot allocate memory.\n");
+  fprintf(stderr, "dlsode_problem_init: Cannot allocate memory.\n");
   return C_ODEPACK_MEM_ERROR;
 unknown_step_error:
-  fprintf(stderr, "dlsode_session_init: Unknown step method. METH = %d\n", dls->step_method);
+  fprintf(stderr, "dlsode_problem_init: Unknown step method. METH = %d\n", dls->step_method);
   return C_ODEPACK_UNKNOWN_OPTION;
 unknown_iter_error:
-  fprintf(stderr, "dlsode_session_init: Unknown iteration method. MITER = %d\n", dls->iter_method);
+  fprintf(stderr, "dlsode_problem_init: Unknown iteration method. MITER = %d\n", dls->iter_method);
   return C_ODEPACK_UNKNOWN_OPTION;
 }
 
-void dlsode_session_close(dlsode_session *dls){
+void dlsode_problem_close(dlsode_problem *dls){
   if(dls == NULL)
     return;
   
@@ -159,7 +159,7 @@ int dlsode_integrate
 (double t,
  double *t0, double *q,
  odepack_field_func f_func, odepack_jacobian_func j_func,
- void *data, dlsode_session *dls)
+ void *data, dlsode_problem *dls)
 {
   /*Not ANSI, don't know if this is thread safe.*/
   void dlsode_field_compat(const int *neq, const double *t_, const double *y, double *ydot){

@@ -56,14 +56,14 @@ void simple_pendulum_jacobian(double *dfdq,
 int main(){
 /*-----------------------------------------------------------------------*/  
   double opkd_rtol = 0.0, opkd_atol = 1e-12;
-  dlsode_session *opkd;
-  opkd = dlsode_session_create(2,
+  dlsode_problem *opkd;
+  opkd = dlsode_problem_create(2,
 			       BDF, CHORD_ITER_USR_FULL_JAC,
 			       10000, &opkd_atol, &opkd_rtol);
 
   if(opkd == NULL)
     return 1;
-  dlsode_session_init(opkd);
+  dlsode_problem_init(opkd);
 /*-----------------------------------------------------------------------*/
   double q[2], t0, tf, dt, t;
 
@@ -91,6 +91,6 @@ int main(){
 
   fclose(data);
 /*-----------------------------------------------------------------------*/  
-  dlsode_session_close(opkd);
+  dlsode_problem_close(opkd);
   return;
 }

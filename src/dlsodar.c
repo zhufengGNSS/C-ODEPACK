@@ -25,12 +25,12 @@
 #include "c-odepack.h"
 #include "utility.h"
 
-dlsodar_session* dlsodar_session_create
+dlsodar_problem* dlsodar_problem_create
 (int neq, int ng,
  int jac_type, int max_steps,
  double *atol, double *rtol){
-  dlsodar_session *dls;
-  dls = calloc(1, sizeof(dlsodar_session));
+  dlsodar_problem *dls;
+  dls = calloc(1, sizeof(dlsodar_problem));
   if(dls == NULL)
     goto mem_error;
 
@@ -44,11 +44,11 @@ dlsodar_session* dlsodar_session_create
   return dls;
 
 mem_error:
-  fprintf(stderr, "dlsodar_session_create: Cannot allocate memory.\n");
+  fprintf(stderr, "dlsodar_problem_create: Cannot allocate memory.\n");
   return NULL;
 }
 
-int dlsodar_session_init(dlsodar_session *dls){
+int dlsodar_problem_init(dlsodar_problem *dls){
   int i, j, k;
   /*-----------------------------------------------------------------------*/
   dls->jroot = calloc(dls->ng, sizeof(int));
@@ -100,12 +100,12 @@ int dlsodar_session_init(dlsodar_session *dls){
   return C_ODEPACK_SUCCESS;
 
 mem_error:
-  fprintf(stderr, "dlsodar_session_init: Cannot allocate memory.\n");
+  fprintf(stderr, "dlsodar_problem_init: Cannot allocate memory.\n");
   return C_ODEPACK_MEM_ERROR;
 }
 
 
-void dlsodar_session_close(dlsodar_session *dls){
+void dlsodar_problem_close(dlsodar_problem *dls){
   if(dls == NULL)
     return;
   
@@ -118,7 +118,7 @@ void dlsodar_session_close(dlsodar_session *dls){
 int dlsodar_integrate(double t,
 		      double *t0, double *q,
 		      odepack_field_func f_func, odepack_jacobian_func j_func, odepack_root_func c_func,
-		      void *data, dlsodar_session *dls){
+		      void *data, dlsodar_problem *dls){
 
   /*Not ANSI, probably not thread safe, unless C has
     closures or something like that :)
