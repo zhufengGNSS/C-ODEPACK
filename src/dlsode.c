@@ -38,7 +38,7 @@ dlsode_problem* dlsode_problem_create
   ret->neq = neq;
   ret->step_method = step_method;
   ret->iter_method = iter_method;
-  ret->max_steps = 10000;
+  ret->max_steps = max_steps;
   ret->atol = atol;
   ret->rtol = rtol;
 
